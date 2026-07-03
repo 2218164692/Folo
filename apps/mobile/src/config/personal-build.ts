@@ -38,4 +38,5 @@ export const mobileFeatureFlags = {
     defaultFeatureState,
   ),
   tts: readPublicBoolean("EXPO_PUBLIC_ENABLE_TTS", defaultFeatureState),
+  updates: readPublicBoolean("EXPO_PUBLIC_ENABLE_UPDATES", defaultFeatureState),
 } as const

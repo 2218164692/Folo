@@ -42,7 +42,8 @@
         "EXPO_PUBLIC_ENABLE_PAID_SUBSCRIPTION": "0",
         "EXPO_PUBLIC_ENABLE_REVIEW_PROMPTS": "0",
         "EXPO_PUBLIC_ENABLE_SUPPORT_FEEDBACK": "0",
-        "EXPO_PUBLIC_ENABLE_TTS": "0"
+        "EXPO_PUBLIC_ENABLE_TTS": "0",
+        "EXPO_PUBLIC_ENABLE_UPDATES": "0"
       }
     },
     "e2e-android": {

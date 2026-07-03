@@ -6,6 +6,7 @@ import { registerRootComponent } from "expo"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { cssInterop } from "nativewind"
+import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 import { enableFreeze } from "react-native-screens"
 
@@ -13,6 +14,7 @@ import { App } from "./App"
 import { BottomTabProvider } from "./components/layouts/tabbar/BottomTabProvider"
 import { ReactNativeTab } from "./components/layouts/tabbar/ReactNativeTab"
 import { Lightbox } from "./components/ui/lightbox/Lightbox"
+import { mobileFeatureFlags } from "./config/personal-build"
 import { initializeApp } from "./initialize"
 import { followApi } from "./lib/api-client"
 import { authClient } from "./lib/auth"
@@ -49,8 +51,10 @@ registerRootComponent(RootComponent)
 
 function RootComponent() {
   const { t } = useTranslation()
+  const OtaBoundary = mobileFeatureFlags.updates ? OtaProvider : Fragment
+
   return (
-    <OtaProvider>
+    <OtaBoundary>
       <RootProviders>
         <BottomTabProvider>
           <RootStackNavigation
@@ -102,6 +106,6 @@ function RootComponent() {
           <Lightbox />
         </BottomTabProvider>
       </RootProviders>
-    </OtaProvider>
+    </OtaBoundary>
   )
 }

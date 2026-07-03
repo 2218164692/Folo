@@ -23,6 +23,7 @@ jobs:
       EXPO_PUBLIC_ENABLE_REVIEW_PROMPTS: "0"
       EXPO_PUBLIC_ENABLE_SUPPORT_FEEDBACK: "0"
       EXPO_PUBLIC_ENABLE_TTS: "0"
+      EXPO_PUBLIC_ENABLE_UPDATES: "0"
       EXPO_PUBLIC_PERSONAL_BUILD: "1"
       EXPO_SLUG: ${{ vars.EXPO_SLUG || 'folo-personal' }}
       IOS_BUNDLE_IDENTIFIER: ${{ vars.IOS_BUNDLE_IDENTIFIER || 'is.follow.personal' }}
@@ -60,6 +61,26 @@ jobs:
       - name: Install CocoaPods
         working-directory: apps/mobile/ios
         run: pod install --repo-update
+
+      - name: Verify personal native exclusions
+        working-directory: apps/mobile
+        run: |
+          set -euo pipefail
+
+          if ! grep -q "exclude: \['expo-updates'\]" ios/Podfile; then
+            echo "expo-updates was not excluded from use_expo_modules! in ios/Podfile"
+            exit 1
+          fi
+
+          if [ ! -f ios/Pods/Pods.xcodeproj/project.pbxproj ]; then
+            echo "Pods.xcodeproj was not generated"
+            exit 1
+          fi
+
+          if grep -q "EXUpdates" ios/Pods/Pods.xcodeproj/project.pbxproj; then
+            echo "EXUpdates is still present in Pods.xcodeproj"
+            exit 1
+          fi
 
       - name: Build unsigned iOS app
         working-directory: apps/mobile

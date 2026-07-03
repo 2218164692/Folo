@@ -81,10 +81,11 @@ export const AboutScreen = () => {
   const buildId = nativeBuildVersion
   const appVersion = nativeApplicationVersion
   const { currentlyRunning } = Updates.useUpdates()
-  const otaVersion =
+  const currentOtaVersion =
     resolveOtaReleaseVersion(currentlyRunning.manifest) ??
     normalizeOtaVersion(currentlyRunning.runtimeVersion) ??
     normalizeOtaVersion(Updates.runtimeVersion)
+  const otaVersion = mobileFeatureFlags.updates ? currentOtaVersion : null
   const appVersionLabel = `${appVersion} (${buildId})${otaVersion ? ` · OTA ${otaVersion}` : ""}`
   const { distribution, platform, rateTarget, storageKey, userId } = useMobileReviewPromptState()
 

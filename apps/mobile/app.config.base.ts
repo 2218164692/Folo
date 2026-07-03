@@ -43,6 +43,7 @@ const readBooleanEnv = (name: string, fallback: boolean) => {
 const isPersonalBuild = readBooleanEnv("EXPO_PUBLIC_PERSONAL_BUILD", false)
 const defaultFeatureState = !isPersonalBuild
 const isAnalyticsEnabled = readBooleanEnv("EXPO_PUBLIC_ENABLE_ANALYTICS", defaultFeatureState)
+const isUpdatesEnabled = readBooleanEnv("EXPO_PUBLIC_ENABLE_UPDATES", defaultFeatureState)
 
 export const resolveRuntimeVersion = ({
   isDevelopment,
@@ -84,12 +85,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const androidPackage =
     process.env.ANDROID_PACKAGE || (isPersonalBuild ? "is.follow.personal" : "is.follow")
   const rnfbForceStaticLinking: string[] = ["RNFBApp", "RNFBMessaging", "RNFBAppCheck"]
-  const updates = isPersonalBuild
+  const updates = isUpdatesEnabled
     ? {
-        enabled: false,
-        checkAutomatically: "NEVER" as const,
-      }
-    : {
         url: "https://ota.folo.is/manifest",
         requestHeaders: {
           "expo-channel-name": channelName,
@@ -99,6 +96,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           keyid: "main",
           alg: "rsa-v1_5-sha256",
         },
+        checkAutomatically: "NEVER" as const,
+      }
+    : {
+        enabled: false,
         checkAutomatically: "NEVER" as const,
       }
 
@@ -218,6 +219,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       require("./plugins/with-follow-ios-resources.js"),
       require("./plugins/with-rnfb-build-properties.js"),
+      ...(!isUpdatesEnabled ? [require("./plugins/with-disabled-expo-updates.js")] : []),
 
       require("./plugins/with-gradle-jvm-heap-size-increase.js"),
       require("./plugins/with-android-jdk-21.js"),

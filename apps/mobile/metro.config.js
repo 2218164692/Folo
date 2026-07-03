@@ -5,6 +5,24 @@ const { wrapWithReanimatedMetroConfig } = require("react-native-reanimated/metro
 
 const config = getDefaultConfig(__dirname, { isCSSEnabled: true })
 const workspaceRoot = path.resolve(__dirname, "../..")
+const trueValues = new Set(["1", "true", "yes", "on"])
+const falseValues = new Set(["0", "false", "no", "off"])
+const readPublicBoolean = (name, fallback) => {
+  const value = String(process.env[name] || "")
+    .trim()
+    .toLowerCase()
+
+  if (!value) return fallback
+  if (trueValues.has(value)) return true
+  if (falseValues.has(value)) return false
+  return fallback
+}
+const isPersonalBuild = readPublicBoolean("EXPO_PUBLIC_PERSONAL_BUILD", false)
+const isUpdatesEnabled = readPublicBoolean("EXPO_PUBLIC_ENABLE_UPDATES", !isPersonalBuild)
+const disabledExpoUpdatesPath = path.resolve(
+  __dirname,
+  "./src/modules/ota/expo-updates-disabled.ts",
+)
 config.resolver.sourceExts.push("sql")
 
 config.transformer.getTransformOptions = async () => ({
@@ -28,6 +46,13 @@ config.watchFolders = Array.from(
 )
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (!isUpdatesEnabled && moduleName === "expo-updates") {
+    return {
+      type: "sourceFile",
+      filePath: disabledExpoUpdatesPath,
+    }
+  }
+
   const result = context.resolveRequest(context, moduleName, platform)
   if (result.type === "sourceFile") {
     const lastDotIndex = result.filePath.lastIndexOf(".")
