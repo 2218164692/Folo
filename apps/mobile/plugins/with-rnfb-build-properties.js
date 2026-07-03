@@ -44,7 +44,7 @@ module.exports = function withRNFBBuildProperties(config) {
       end
     end`,
       anchor: /post_install do \|installer\|/,
-      offset: 7,
+      offset: 0,
       comment: "#",
     }).contents
 
