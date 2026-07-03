@@ -77,11 +77,14 @@ jobs:
               | ruby -rjson -e '
                   data = JSON.parse(STDIN.read)
                   schemes = data.dig("workspace", "schemes") || []
-                  preferred = schemes.find { |s| s == ENV["EXPO_PUBLIC_APP_NAME"] || s == ENV["EXPO_SLUG"] || s == "Folo" } || schemes.first
+                  app_schemes = schemes.reject { |s| s.start_with?("Pods-") || s.include?("Tests") || s.include?("UITests") }
+                  preferred_names = [ENV["EXPO_PUBLIC_APP_NAME"], "Folo", ENV["EXPO_SLUG"]].compact
+                  preferred = preferred_names.lazy.map { |name| app_schemes.find { |s| s == name } }.find(&:itself) || app_schemes.first
                   abort "No Xcode scheme found" unless preferred
                   puts preferred
                 '
           )"
+          echo "Using Xcode scheme: $scheme"
 
           derived_data_path="$PWD/build/DerivedData"
           rm -rf "$derived_data_path" "$PWD/Payload" "$PWD/build-personal-unsigned.ipa"
@@ -101,11 +104,24 @@ jobs:
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE_SPECIFIER=""
 
-          app_path="$(find "$derived_data_path/Build/Products/Release-iphoneos" -maxdepth 1 -name "*.app" -print -quit)"
+          products_path="$derived_data_path/Build/Products"
+          app_path="$(
+            find "$products_path" \
+              -type d \
+              -name "*.app" \
+              ! -name "*Tests.app" \
+              ! -name "*UITests.app" \
+              ! -path "*/Debug-iphonesimulator/*" \
+              ! -path "*/Release-iphonesimulator/*" \
+              -print -quit
+          )"
           if [ -z "$app_path" ]; then
-            echo "No .app found in archive"
+            echo "No .app found in build products"
+            echo "Build products:"
+            find "$products_path" -maxdepth 4 -print
             exit 1
           fi
+          echo "Packaging app: $app_path"
 
           mkdir -p Payload
           cp -R "$app_path" Payload/
