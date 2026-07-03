@@ -19,6 +19,7 @@ import type { MenuItemIconProps } from "zeego/lib/typescript/menu"
 import { getActionLanguage, useGeneralSettingKey } from "@/src/atoms/settings/general"
 import { ActionBarItem } from "@/src/components/ui/action-bar/ActionBarItem"
 import { DropdownMenu } from "@/src/components/ui/context-menu"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { DocmentCuteReIcon } from "@/src/icons/docment_cute_re"
 import { More1CuteReIcon } from "@/src/icons/more_1_cute_re"
 import { ShareForwardCuteReIcon } from "@/src/icons/share_forward_cute_re"
@@ -80,8 +81,9 @@ const HeaderRightActionsImpl = ({
   const { showReadabilityAtom, showAITranslationAtom } = useEntryContentContext()
   const [showTranslation, setShowTranslation] = useAtom(showAITranslationAtom)
   const [showReadability, setShowReadability] = useAtom(showReadabilityAtom)
+  const translationSetting = useGeneralSettingKey("translation")
   const showAITranslationSetting =
-    useGeneralSettingKey("translation") || !!entry?.settings?.translation
+    !mobileFeatureFlags.ai || translationSetting || !!entry?.settings?.translation
   const translationMode = useGeneralSettingKey("translationMode")
   const showReadabilitySetting = !!entry?.settings?.readability
 
@@ -163,6 +165,7 @@ const HeaderRightActionsImpl = ({
       // inMenu: true,
     },
     isLoggedIn &&
+      mobileFeatureFlags.ai &&
       !showAITranslationSetting && {
         key: "ShowTranslation",
         title: "Show Translation",
@@ -173,7 +176,7 @@ const HeaderRightActionsImpl = ({
         isCheckbox: true,
         inMenu: true,
       },
-    {
+    mobileFeatureFlags.tts && {
       key: "PlayTts",
       title: t("entry_content.header.play_tts"),
       icon: <VoiceCuteReIcon />,

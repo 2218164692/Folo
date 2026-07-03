@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import type { AppStateStatus } from "react-native"
 import { AppState, InteractionManager } from "react-native"
 
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { dialogCountAtom } from "@/src/lib/dialog-state"
 import { Navigation } from "@/src/lib/navigation/Navigation"
 import { PlanScreen } from "@/src/modules/settings/routes/Plan"
@@ -172,7 +173,9 @@ export const ReviewPromptProvider = () => {
         return
       }
 
-      tracker.reviewPromptShown({ distribution, platform, source: "manual" })
+      if (mobileFeatureFlags.analytics) {
+        tracker.reviewPromptShown({ distribution, platform, source: "manual" })
+      }
       const nextState = await requestMobileNativeReview({
         appVersion: nativeApplicationVersion ?? "unknown",
         distribution,
@@ -256,18 +259,20 @@ export const ReviewPromptProvider = () => {
           return
         }
 
-        tracker.reviewPromptEligible({
-          distribution,
-          platform,
-          score: latestEligibility.score,
-          source: "auto",
-        })
-        tracker.reviewPromptShown({
-          distribution,
-          platform,
-          score: latestEligibility.score,
-          source: "auto",
-        })
+        if (mobileFeatureFlags.analytics) {
+          tracker.reviewPromptEligible({
+            distribution,
+            platform,
+            score: latestEligibility.score,
+            source: "auto",
+          })
+          tracker.reviewPromptShown({
+            distribution,
+            platform,
+            score: latestEligibility.score,
+            source: "auto",
+          })
+        }
 
         const nextState = await requestMobileNativeReview({
           appVersion: nativeApplicationVersion ?? "unknown",

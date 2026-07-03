@@ -10,9 +10,14 @@ import { getAnalytics } from "@react-native-firebase/analytics"
 import { nativeApplicationVersion, nativeBuildVersion } from "expo-application"
 import PostHog from "posthog-react-native"
 
+import { mobileFeatureFlags } from "../config/personal-build"
 import { proxyEnv } from "../lib/proxy-env"
 
 export const initAnalytics = async () => {
+  if (!mobileFeatureFlags.analytics) {
+    return
+  }
+
   setFirebaseTracker(getAnalytics())
 
   if (proxyEnv.POSTHOG_KEY) {

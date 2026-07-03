@@ -14,6 +14,7 @@ import {
   GroupedInsetListNavigationLinkIcon,
 } from "@/src/components/ui/grouped/GroupedList"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { CertificateCuteFiIcon } from "@/src/icons/certificate_cute_fi"
 import { DatabaseIcon } from "@/src/icons/database"
 import { ExitCuteFiIcon } from "@/src/icons/exit_cute_fi"
@@ -137,6 +138,7 @@ const SettingGroupNavigationLinks: GroupNavigationLink[] = [
     iconBackgroundColor: "#F97316",
     anonymous: false,
     testID: "settings-account-link",
+    hideIf: () => !mobileFeatureFlags.account,
   },
 ]
 
@@ -149,7 +151,9 @@ const SubscriptionGroupNavigationLinks: GroupNavigationLink[] = [
     },
     iconBackgroundColor: accentColor,
     anonymous: false,
-    hideIf: (serverConfigs) => !isPaymentFeatureEnabled(serverConfigs?.PAYMENT_ENABLED),
+    hideIf: (serverConfigs) =>
+      !mobileFeatureFlags.paidSubscription ||
+      !isPaymentFeatureEnabled(serverConfigs?.PAYMENT_ENABLED),
   },
 ]
 
@@ -205,6 +209,7 @@ const PrivacyGroupNavigationLinks: GroupNavigationLink[] = [
       navigation.pushControllerView(AboutScreen)
     },
     iconBackgroundColor: "#EAB308",
+    hideIf: () => !mobileFeatureFlags.about,
   },
 ]
 
@@ -234,6 +239,7 @@ const ActionGroupNavigationLinks: GroupNavigationLink[] = [
     iconBackgroundColor: "#DC2626",
     anonymous: false,
     testID: "settings-sign-out",
+    hideIf: () => !mobileFeatureFlags.account,
   },
 ]
 
@@ -265,6 +271,7 @@ const NavigationLinkGroup: FC<{
               onPress={() => {
                 if (
                   link.trialNotAllowed &&
+                  mobileFeatureFlags.paidSubscription &&
                   (role === UserRole.Free || role === UserRole.Trial) &&
                   getIsPaymentEnabled()
                 ) {

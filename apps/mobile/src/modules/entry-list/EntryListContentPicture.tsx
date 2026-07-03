@@ -12,6 +12,7 @@ import { StyleSheet, View } from "react-native"
 import { useActionLanguage, useGeneralSettingKey } from "@/src/atoms/settings/general"
 import { useBottomTabBarHeight } from "@/src/components/layouts/tabbar/hooks"
 import { PlatformActivityIndicator } from "@/src/components/ui/loading/PlatformActivityIndicator"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { useIsTabletLayout } from "@/src/lib/responsive"
 import { useEntries } from "@/src/modules/screen/atoms"
 import { useHeaderHeight } from "@/src/modules/screen/hooks/useHeaderHeight"
@@ -73,7 +74,9 @@ export const EntryListContentPicture = ({
   const actionLanguage = useActionLanguage()
   const userRole = useUserRole()
   const translationPrefetchEnabled =
-    translation && (userRole == null || (userRole !== UserRole.Free && userRole !== UserRole.Trial))
+    mobileFeatureFlags.ai &&
+    translation &&
+    (userRole == null || (userRole !== UserRole.Free && userRole !== UserRole.Trial))
   usePrefetchEntryTranslation({
     entryIds: active ? viewableItems.map((item) => item.key) : [],
     language: actionLanguage,

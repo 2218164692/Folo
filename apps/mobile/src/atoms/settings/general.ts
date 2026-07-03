@@ -4,6 +4,7 @@ import type { FetchEntriesPropsSettings } from "@follow/store/entry/types"
 import type { SupportedLanguages } from "@follow-app/client-sdk"
 import { useMemo } from "react"
 
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { getDeviceLanguage } from "@/src/lib/i18n"
 
 import { createSettingAtom } from "./internal/helper"
@@ -13,6 +14,9 @@ const createDefaultSettings = (): GeneralSettings => {
   return {
     ...defaultGeneralSettings,
     language: deviceLanguage,
+    sendAnonymousData: mobileFeatureFlags.analytics,
+    summary: mobileFeatureFlags.ai ? defaultGeneralSettings.summary : false,
+    translation: mobileFeatureFlags.ai ? defaultGeneralSettings.translation : false,
   }
 }
 

@@ -12,6 +12,7 @@ import { useIntentHandler } from "./hooks/useIntentHandler"
 import { useMessaging, useUpdateMessagingToken } from "./hooks/useMessaging"
 import { useOnboarding } from "./hooks/useOnboarding"
 import { useUnreadCountBadge } from "./hooks/useUnreadCountBadge"
+import { mobileFeatureFlags } from "./config/personal-build"
 import { useAuthSessionCookieRefresh } from "./lib/auth"
 import { DebugButton, EnvProfileIndicator } from "./modules/debug"
 import { ReviewPromptProvider } from "./modules/review-prompt/provider"
@@ -65,5 +66,5 @@ const SideEffect = () => {
   usePrefetchActions()
   useUpdateMessagingToken()
   useMessaging()
-  return <ReviewPromptProvider />
+  return mobileFeatureFlags.reviewPrompts ? <ReviewPromptProvider /> : null
 }

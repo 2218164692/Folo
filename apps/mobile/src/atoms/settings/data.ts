@@ -1,9 +1,10 @@
 import type { DataSettings } from "@/src/interfaces/settings/data"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 
 import { createSettingAtom } from "./internal/helper"
 
 export const createDefaultSettings = (): DataSettings => ({
-  sendAnonymousData: true,
+  sendAnonymousData: mobileFeatureFlags.analytics,
 })
 
 export const {

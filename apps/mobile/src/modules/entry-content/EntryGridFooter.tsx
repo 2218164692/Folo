@@ -9,6 +9,7 @@ import { useActionLanguage, useGeneralSettingKey } from "@/src/atoms/settings/ge
 import { RelativeDateTime } from "@/src/components/ui/datetime/RelativeDateTime"
 import { FeedIcon } from "@/src/components/ui/icon/feed-icon"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 
 import { EntryTranslation } from "../entry-list/templates/EntryTranslation"
 
@@ -28,7 +29,8 @@ export const EntryGridFooter = ({
     read: state.read,
     translation: state.settings?.translation,
   }))
-  const enableTranslation = useGeneralSettingKey("translation")
+  const translationSetting = useGeneralSettingKey("translation")
+  const enableTranslation = mobileFeatureFlags.ai && translationSetting
   const actionLanguage = useActionLanguage()
   const translation = useEntryTranslation({
     entryId,
@@ -51,7 +53,7 @@ export const EntryGridFooter = ({
             )}
             source={entry.title}
             target={translation?.title}
-            showTranslation={!!entry.translation}
+            showTranslation={mobileFeatureFlags.ai && !!entry.translation}
             inline
           />
         )}

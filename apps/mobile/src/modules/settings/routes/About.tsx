@@ -19,6 +19,7 @@ import {
 } from "@/src/components/ui/grouped/GroupedList"
 import { Logo } from "@/src/components/ui/logo"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { DiscordCuteFiIcon } from "@/src/icons/discord_cute_fi"
 import { GithubCuteFiIcon } from "@/src/icons/github_cute_fi"
 import { SocialXCuteReIcon } from "@/src/icons/social_x_cute_re"
@@ -88,6 +89,10 @@ export const AboutScreen = () => {
   const { distribution, platform, rateTarget, storageKey, userId } = useMobileReviewPromptState()
 
   const handleRateFolo = async () => {
+    if (!mobileFeatureFlags.reviewPrompts) {
+      return
+    }
+
     const latestState = readMobileReviewPromptState(storageKey)
 
     if (await isMobileNativeReviewAvailable(distribution)) {
@@ -115,6 +120,10 @@ export const AboutScreen = () => {
   }
 
   const handleSendFeedback = async () => {
+    if (!mobileFeatureFlags.supportAndFeedback) {
+      return
+    }
+
     persistMobileNegativeFeedback({
       appVersion: appVersion ?? "unknown",
       distribution,
@@ -189,23 +198,31 @@ export const AboutScreen = () => {
         </GroupedInsetListBaseCell>
       </GroupedInsetListCard>
 
-      <GroupedInsetListSectionHeader label={t("about.support")} />
-      <GroupedInsetListCard>
-        <GroupedInsetListCell
-          label={t("about.rateFolo")}
-          description={t("about.rateFoloDescription")}
-          onPress={() => {
-            void handleRateFolo()
-          }}
-        />
-        <GroupedInsetListCell
-          label={t("about.sendFeedback")}
-          description={t("about.sendFeedbackDescription")}
-          onPress={() => {
-            void handleSendFeedback()
-          }}
-        />
-      </GroupedInsetListCard>
+      {(mobileFeatureFlags.reviewPrompts || mobileFeatureFlags.supportAndFeedback) && (
+        <>
+          <GroupedInsetListSectionHeader label={t("about.support")} />
+          <GroupedInsetListCard>
+            {mobileFeatureFlags.reviewPrompts && (
+              <GroupedInsetListCell
+                label={t("about.rateFolo")}
+                description={t("about.rateFoloDescription")}
+                onPress={() => {
+                  void handleRateFolo()
+                }}
+              />
+            )}
+            {mobileFeatureFlags.supportAndFeedback && (
+              <GroupedInsetListCell
+                label={t("about.sendFeedback")}
+                description={t("about.sendFeedbackDescription")}
+                onPress={() => {
+                  void handleSendFeedback()
+                }}
+              />
+            )}
+          </GroupedInsetListCard>
+        </>
+      )}
 
       <GroupedInsetListSectionHeader label={t("about.socialMedia")} />
       <GroupedInsetListCard>

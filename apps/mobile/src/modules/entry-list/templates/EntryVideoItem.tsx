@@ -13,6 +13,7 @@ import { Image } from "@/src/components/ui/image/Image"
 import { ItemPressableStyle } from "@/src/components/ui/pressable/enum"
 import { ItemPressable } from "@/src/components/ui/pressable/ItemPressable"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { openLink } from "@/src/lib/native"
 import { toast } from "@/src/lib/toast"
 import { resolveVideoUrlForMobileOpen } from "@/src/lib/video-url"
@@ -51,10 +52,12 @@ export const EntryVideoItem = memo(({ id }: { id: string }) => {
             if (isLoggedIn) {
               unreadSyncService.markEntryAsRead(id)
             }
-            tracker.navigateEntry({
-              feedId: item.feedId!,
-              entryId: id,
-            })
+            if (mobileFeatureFlags.analytics) {
+              tracker.navigateEntry({
+                feedId: item.feedId!,
+                entryId: id,
+              })
+            }
             if (!item.url) {
               toast.error(t("entry_content.no_video_url"))
               return

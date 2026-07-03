@@ -25,6 +25,7 @@ import { ItemPressable } from "@/src/components/ui/pressable/ItemPressable"
 import { NativePressable } from "@/src/components/ui/pressable/NativePressable"
 import { Text } from "@/src/components/ui/typography/Text"
 import { VideoPlayer } from "@/src/components/ui/video/VideoPlayer"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { useNavigation } from "@/src/lib/navigation/hooks"
 import { EntryDetailScreen } from "@/src/screens/(stack)/entries/[entryId]/EntryDetailScreen"
 import { FeedScreen } from "@/src/screens/(stack)/feeds/[feedId]/FeedScreen"
@@ -46,7 +47,8 @@ export const EntrySocialItem = memo(
       author: state.author,
       translation: state.settings?.translation,
     }))
-    const enableTranslation = useGeneralSettingKey("translation")
+    const translationSetting = useGeneralSettingKey("translation")
+    const enableTranslation = mobileFeatureFlags.ai && translationSetting
     const actionLanguage = useActionLanguage()
     const translation = useEntryTranslation({
       entryId,
@@ -61,10 +63,12 @@ export const EntrySocialItem = memo(
       if (isLoggedIn) {
         unreadSyncService.markEntryAsRead(entryId)
       }
-      tracker.navigateEntry({
-        feedId: entry?.feedId ?? "",
-        entryId,
-      })
+      if (mobileFeatureFlags.analytics) {
+        tracker.navigateEntry({
+          feedId: entry?.feedId ?? "",
+          entryId,
+        })
+      }
       navigation.pushControllerView(EntryDetailScreen, {
         entryId,
         entryIds: extraData.entryIds ?? [],
@@ -155,7 +159,7 @@ export const EntrySocialItem = memo(
               className="ml-12 text-[15px] leading-[22px] text-label"
               source={description}
               target={translation?.description}
-              showTranslation={!!entry?.translation}
+              showTranslation={mobileFeatureFlags.ai && !!entry?.translation}
             />
           </View>
 

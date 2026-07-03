@@ -15,6 +15,7 @@ import { z } from "zod"
 import { SubmitButton } from "@/src/components/common/SubmitButton"
 import { PlainTextField } from "@/src/components/ui/form/TextField"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { getCookie, signIn, signUp } from "@/src/lib/auth"
 import { useNavigation } from "@/src/lib/navigation/hooks"
 import { Navigation } from "@/src/lib/navigation/Navigation"
@@ -75,7 +76,7 @@ async function signInWithEmail(
 
   await userSyncService.whoami()
 
-  if (trackLogin) {
+  if (mobileFeatureFlags.analytics && trackLogin) {
     tracker.userLogin({
       type: "email",
     })
@@ -241,9 +242,11 @@ export function EmailSignUp() {
       }
 
       toast.success(i18next.t("login.sign_up_successful"))
-      tracker.register({
-        type: "email",
-      })
+      if (mobileFeatureFlags.analytics) {
+        tracker.register({
+          type: "email",
+        })
+      }
       Navigation.rootNavigation.back()
     },
   })

@@ -10,6 +10,7 @@ import DeviceInfo from "react-native-device-info"
 import { Image } from "@/src/components/ui/image/Image"
 import { PlatformActivityIndicator } from "@/src/components/ui/loading/PlatformActivityIndicator"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { signIn, useAuthProviders } from "@/src/lib/auth"
 
 import { loginWithSocialProvider } from "./social-login"
@@ -110,6 +111,10 @@ export function SocialLogin({ onPressEmail }: { isRegister: boolean; onPressEmai
                   return !!session?.user
                 },
                 trackLogin: () => {
+                  if (!mobileFeatureFlags.analytics) {
+                    return
+                  }
+
                   tracker.userLogin({
                     type: "social",
                   })

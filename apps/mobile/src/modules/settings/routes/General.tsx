@@ -19,6 +19,7 @@ import {
   GroupedInsetListSectionHeader,
 } from "@/src/components/ui/grouped/GroupedList"
 import { Switch } from "@/src/components/ui/switch/Switch"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { updateDayjsLocale } from "@/src/lib/i18n"
 import type { NavigationControllerView } from "@/src/lib/navigation/types"
 import { fetchTtsVoices } from "@/src/modules/player/tts-service"
@@ -183,42 +184,50 @@ export const GeneralScreen: NavigationControllerView = () => {
         <LanguageSetting settingKey="language" />
       </GroupedInsetListCard>
 
-      {/* Content Behavior */}
-      <GroupedInsetListSectionHeader label={t("general.action.title")} />
-      <GroupedInsetListCard>
-        <GroupedInsetListCell
-          label={t("general.action.summary.label")}
-          description={t("general.action.summary.description")}
-        >
-          <Switch
-            size="sm"
-            testID="general-ai-summary-switch"
-            value={summary}
-            onValueChange={(value) => {
-              setGeneralSetting("summary", value)
-            }}
-          />
-        </GroupedInsetListCell>
-        <GroupedInsetListCell
-          label={t("general.action.translation.label")}
-          description={t("general.action.translation.description")}
-        >
-          <Switch
-            size="sm"
-            value={translation}
-            onValueChange={(value) => {
-              setGeneralSetting("translation", value)
-            }}
-          />
-        </GroupedInsetListCell>
-        <TranslationModeSetting />
-        <LanguageSetting settingKey="actionLanguage" />
-      </GroupedInsetListCard>
+      {mobileFeatureFlags.ai && (
+        <>
+          {/* Content Behavior */}
+          <GroupedInsetListSectionHeader label={t("general.action.title")} />
+          <GroupedInsetListCard>
+            <GroupedInsetListCell
+              label={t("general.action.summary.label")}
+              description={t("general.action.summary.description")}
+            >
+              <Switch
+                size="sm"
+                testID="general-ai-summary-switch"
+                value={summary}
+                onValueChange={(value) => {
+                  setGeneralSetting("summary", value)
+                }}
+              />
+            </GroupedInsetListCell>
+            <GroupedInsetListCell
+              label={t("general.action.translation.label")}
+              description={t("general.action.translation.description")}
+            >
+              <Switch
+                size="sm"
+                value={translation}
+                onValueChange={(value) => {
+                  setGeneralSetting("translation", value)
+                }}
+              />
+            </GroupedInsetListCell>
+            <TranslationModeSetting />
+            <LanguageSetting settingKey="actionLanguage" />
+          </GroupedInsetListCard>
+        </>
+      )}
 
-      <GroupedInsetListSectionHeader label={t("general.tts")} />
-      <GroupedInsetListCard>
-        <VoiceSetting />
-      </GroupedInsetListCard>
+      {mobileFeatureFlags.tts && (
+        <>
+          <GroupedInsetListSectionHeader label={t("general.tts")} />
+          <GroupedInsetListCard>
+            <VoiceSetting />
+          </GroupedInsetListCard>
+        </>
+      )}
 
       {/* Subscriptions */}
 

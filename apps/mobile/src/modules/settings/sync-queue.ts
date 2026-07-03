@@ -18,6 +18,7 @@ import {
   generalServerSyncWhiteListKeys,
   getGeneralSettings,
 } from "@/src/atoms/settings/general"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import {
   __spotlightSettingAtom,
   getSpotlightSettings,
@@ -225,6 +226,10 @@ class SettingSyncQueue {
   }
 
   private reportSyncError(stage: "flush" | "syncLocal", error: unknown) {
+    if (!mobileFeatureFlags.analytics) {
+      return
+    }
+
     void tracker.manager.captureException(error, {
       module: "setting_sync",
       stage,

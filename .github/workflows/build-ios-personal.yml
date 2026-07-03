@@ -1,0 +1,119 @@
+name: Build Personal iOS IPA
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build unsigned personal iOS IPA
+    runs-on: macos-latest
+    env:
+      ANDROID_PACKAGE: ${{ vars.ANDROID_PACKAGE || 'is.follow.personal' }}
+      EXPO_OWNER: ${{ vars.EXPO_OWNER }}
+      EXPO_PUBLIC_APP_NAME: ${{ vars.EXPO_PUBLIC_APP_NAME || 'Folo Personal' }}
+      EXPO_PUBLIC_ENABLE_ABOUT: "0"
+      EXPO_PUBLIC_ENABLE_ACCOUNT: "0"
+      EXPO_PUBLIC_ENABLE_AI: "0"
+      EXPO_PUBLIC_ENABLE_ANALYTICS: "0"
+      EXPO_PUBLIC_ENABLE_PAID_SUBSCRIPTION: "0"
+      EXPO_PUBLIC_ENABLE_REVIEW_PROMPTS: "0"
+      EXPO_PUBLIC_ENABLE_SUPPORT_FEEDBACK: "0"
+      EXPO_PUBLIC_ENABLE_TTS: "0"
+      EXPO_PUBLIC_PERSONAL_BUILD: "1"
+      EXPO_SLUG: ${{ vars.EXPO_SLUG || 'folo-personal' }}
+      IOS_BUNDLE_IDENTIFIER: ${{ vars.IOS_BUNDLE_IDENTIFIER || 'is.follow.personal' }}
+      PROFILE: "personal"
+      SENTRY_AUTH_TOKEN: ${{ secrets.RN_SENTRY_AUTH_TOKEN }}
+      CI: true
+      npm_config_node_linker: isolated
+      npm_config_shamefully_hoist: "false"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Xcode
+        uses: ./.github/actions/setup-xcode
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --child-concurrency=1
+
+      - name: Build mobile web assets
+        run: pnpm --dir apps/mobile/web-app build --outDir ../../../out/rn-web/html-renderer
+
+      - name: Prebuild iOS project
+        run: pnpm --dir apps/mobile exec expo prebuild --platform ios --clean --non-interactive
+
+      - name: Install CocoaPods
+        working-directory: apps/mobile/ios
+        run: pod install --repo-update
+
+      - name: Build unsigned iOS app
+        working-directory: apps/mobile
+        run: |
+          set -euo pipefail
+
+          workspace="$(find ios -maxdepth 1 -name "*.xcworkspace" -print -quit)"
+          if [ -z "$workspace" ]; then
+            echo "No Xcode workspace found under apps/mobile/ios"
+            exit 1
+          fi
+
+          scheme="$(
+            xcodebuild -list -json -workspace "$workspace" \
+              | ruby -rjson -e '
+                  data = JSON.parse(STDIN.read)
+                  schemes = data.dig("workspace", "schemes") || []
+                  preferred = schemes.find { |s| s == ENV["EXPO_PUBLIC_APP_NAME"] || s == ENV["EXPO_SLUG"] || s == "Folo" } || schemes.first
+                  abort "No Xcode scheme found" unless preferred
+                  puts preferred
+                '
+          )"
+
+          derived_data_path="$PWD/build/DerivedData"
+          rm -rf "$derived_data_path" "$PWD/Payload" "$PWD/build-personal-unsigned.ipa"
+          mkdir -p "$PWD/build"
+
+          xcodebuild \
+            -workspace "$workspace" \
+            -scheme "$scheme" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$derived_data_path" \
+            clean build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER=""
+
+          app_path="$(find "$derived_data_path/Build/Products/Release-iphoneos" -maxdepth 1 -name "*.app" -print -quit)"
+          if [ -z "$app_path" ]; then
+            echo "No .app found in archive"
+            exit 1
+          fi
+
+          mkdir -p Payload
+          cp -R "$app_path" Payload/
+          ditto -c -k --sequesterRsrc --keepParent Payload build-personal-unsigned.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v7
+        with:
+          name: folo-personal-ios-unsigned
+          path: apps/mobile/build-personal-unsigned.ipa
+          retention-days: 90

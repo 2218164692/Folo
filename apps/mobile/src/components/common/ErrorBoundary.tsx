@@ -6,6 +6,7 @@ import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary"
 import { View } from "react-native"
 
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 
 export const ErrorBoundary = ({
   children,
@@ -53,6 +54,10 @@ const defaultFallbackRender = ({ error }: { error: Error }) => {
 const ErrorReport = ({ error }: { error: Error }) => {
   useEffect(() => {
     console.error(error)
+    if (!mobileFeatureFlags.analytics) {
+      return
+    }
+
     void tracker.manager.captureException(error, {
       source: "mobile_error_boundary",
     })

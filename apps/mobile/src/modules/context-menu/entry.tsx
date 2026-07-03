@@ -16,6 +16,7 @@ import { EntryContentWebView } from "@/src/components/native/webview/EntryConten
 import { WebViewManager } from "@/src/components/native/webview/webview-manager"
 import { ContextMenu } from "@/src/components/ui/context-menu"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { useNavigation } from "@/src/lib/navigation/hooks"
 import { createLinkShareContent } from "@/src/lib/share"
 import { toast } from "@/src/lib/toast"
@@ -184,21 +185,23 @@ export const EntryItemContextMenu = ({
           </ContextMenu.Item>
         )}
 
-        <ContextMenu.Item
-          key="PlayTts"
-          onSelect={() => {
-            void playEntryTts(id, {
-              toastTitle: t("entry_content.header.play_tts"),
-            })
-          }}
-        >
-          <ContextMenu.ItemIcon
-            ios={{
-              name: "speaker.wave.2",
+        {mobileFeatureFlags.tts && (
+          <ContextMenu.Item
+            key="PlayTts"
+            onSelect={() => {
+              void playEntryTts(id, {
+                toastTitle: t("entry_content.header.play_tts"),
+              })
             }}
-          />
-          <ContextMenu.ItemTitle>{t("entry_content.header.play_tts")}</ContextMenu.ItemTitle>
-        </ContextMenu.Item>
+          >
+            <ContextMenu.ItemIcon
+              ios={{
+                name: "speaker.wave.2",
+              }}
+            />
+            <ContextMenu.ItemTitle>{t("entry_content.header.play_tts")}</ContextMenu.ItemTitle>
+          </ContextMenu.Item>
+        )}
 
         {entry.url && (
           <ContextMenu.Item

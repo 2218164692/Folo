@@ -14,6 +14,7 @@ import {
   GroupedInsetListSectionHeader,
 } from "@/src/components/ui/grouped/GroupedList"
 import { Switch } from "@/src/components/ui/switch/Switch"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { getDbPath } from "@/src/database"
 import { toast } from "@/src/lib/toast"
 
@@ -27,22 +28,26 @@ export const DataScreen = () => {
       className="bg-system-grouped-background"
       Header={<NavigationBlurEffectHeaderView title={t("titles.data_control")} />}
     >
-      <GroupedInsetListSectionHeader label={t("general.privacy")} marginSize="small" />
+      {mobileFeatureFlags.analytics && (
+        <>
+          <GroupedInsetListSectionHeader label={t("general.privacy")} marginSize="small" />
 
-      <GroupedInsetListCard>
-        <GroupedInsetListCell
-          label={t("general.send_anonymous_data.label")}
-          description={t("general.send_anonymous_data.description")}
-        >
-          <Switch
-            size="sm"
-            value={sendAnonymousData}
-            onValueChange={(val) => {
-              setDataSetting("sendAnonymousData", val)
-            }}
-          />
-        </GroupedInsetListCell>
-      </GroupedInsetListCard>
+          <GroupedInsetListCard>
+            <GroupedInsetListCell
+              label={t("general.send_anonymous_data.label")}
+              description={t("general.send_anonymous_data.description")}
+            >
+              <Switch
+                size="sm"
+                value={sendAnonymousData}
+                onValueChange={(val) => {
+                  setDataSetting("sendAnonymousData", val)
+                }}
+              />
+            </GroupedInsetListCell>
+          </GroupedInsetListCard>
+        </>
+      )}
 
       {/* Data Sources */}
 

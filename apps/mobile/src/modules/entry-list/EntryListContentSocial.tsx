@@ -9,6 +9,7 @@ import { useCallback, useImperativeHandle, useMemo, useRef } from "react"
 import { View } from "react-native"
 
 import { useActionLanguage, useGeneralSettingKey } from "@/src/atoms/settings/general"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 
 import { useEntries } from "../screen/atoms"
 import { getResetScrollSignalForContent } from "../screen/scroll-reset"
@@ -85,7 +86,9 @@ export const EntryListContentSocial = ({
   const actionLanguage = useActionLanguage()
   const userRole = useUserRole()
   const translationPrefetchEnabled =
-    translation && (userRole == null || (userRole !== UserRole.Free && userRole !== UserRole.Trial))
+    mobileFeatureFlags.ai &&
+    translation &&
+    (userRole == null || (userRole !== UserRole.Free && userRole !== UserRole.Trial))
   usePrefetchEntryTranslation({
     entryIds: active ? viewableItems.map((item) => item.key) : [],
     language: actionLanguage,

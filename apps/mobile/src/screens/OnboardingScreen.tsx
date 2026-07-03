@@ -7,6 +7,7 @@ import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { useReadableContainerStyle } from "@/src/lib/responsive"
 
 import { useNavigation } from "../lib/navigation/hooks"
@@ -30,16 +31,20 @@ export const OnboardingScreen: NavigationControllerView = () => {
   const handleNext = useCallback(() => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1)
-      tracker.onBoarding({
-        step: currentStep,
-        done: false,
-      })
+      if (mobileFeatureFlags.analytics) {
+        tracker.onBoarding({
+          step: currentStep,
+          done: false,
+        })
+      }
     } else {
       // Complete onboarding
-      tracker.onBoarding({
-        step: currentStep,
-        done: true,
-      })
+      if (mobileFeatureFlags.analytics) {
+        tracker.onBoarding({
+          step: currentStep,
+          done: true,
+        })
+      }
       void markOnboardingFinished()
       queryClient
         .invalidateQueries({
@@ -51,6 +56,10 @@ export const OnboardingScreen: NavigationControllerView = () => {
     }
   }, [currentStep, navigation, totalSteps])
   useEffect(() => {
+    if (!mobileFeatureFlags.analytics) {
+      return
+    }
+
     tracker.onBoarding({
       step: 0,
       done: false,

@@ -1,8 +1,9 @@
 import { getIsPaymentEnabled } from "@/src/atoms/server-configs"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { Navigation } from "@/src/lib/navigation/Navigation"
 
 export const navigateToPlanScreen = () => {
-  if (!getIsPaymentEnabled()) {
+  if (!mobileFeatureFlags.paidSubscription || !getIsPaymentEnabled()) {
     return Promise.resolve()
   }
 

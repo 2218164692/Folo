@@ -5,6 +5,7 @@ import { nativeApplicationVersion, nativeBuildVersion } from "expo-application"
 import * as StoreReview from "expo-store-review"
 import { Linking } from "react-native"
 
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { kv } from "@/src/lib/kv"
 import { isAndroidApkInstall } from "@/src/lib/payment"
 import { isAndroid, isIOS } from "@/src/lib/platform"
@@ -161,10 +162,12 @@ export const requestMobileNativeReview = async ({
   const nextState = recordReviewPromptOutcome(state, "native_request", new Date(), appVersion)
   writeMobileReviewPromptState(storageKey, nextState)
 
-  if (trackPositive) {
+  if (mobileFeatureFlags.analytics && trackPositive) {
     tracker.reviewPromptPositive({ distribution, platform, source })
   }
-  tracker.reviewPromptNativeRequested({ distribution, platform, score, source })
+  if (mobileFeatureFlags.analytics) {
+    tracker.reviewPromptNativeRequested({ distribution, platform, score, source })
+  }
   await StoreReview.requestReview()
   return nextState
 }
@@ -198,8 +201,10 @@ export const openMobileStoreReview = async ({
   )
   writeMobileReviewPromptState(storageKey, nextState)
 
-  tracker.reviewPromptPositive({ distribution, platform, source })
-  tracker.reviewPromptStoreOpened({ distribution, platform, source })
+  if (mobileFeatureFlags.analytics) {
+    tracker.reviewPromptPositive({ distribution, platform, source })
+    tracker.reviewPromptStoreOpened({ distribution, platform, source })
+  }
   await openStoreUrl(target)
 
   return nextState
@@ -223,8 +228,10 @@ export const persistMobileNegativeFeedback = ({
   const nextState = recordReviewPromptOutcome(state, "negative_feedback", new Date(), appVersion)
   writeMobileReviewPromptState(storageKey, nextState)
 
-  tracker.reviewPromptNegative({ distribution, platform, source })
-  tracker.reviewPromptFeedbackOpened({ distribution, platform, source })
+  if (mobileFeatureFlags.analytics) {
+    tracker.reviewPromptNegative({ distribution, platform, source })
+    tracker.reviewPromptFeedbackOpened({ distribution, platform, source })
+  }
 
   return nextState
 }

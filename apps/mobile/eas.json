@@ -28,6 +28,23 @@
         "PROFILE": "preview"
       }
     },
+    "personal-ios": {
+      "extends": "preview",
+      "distribution": "internal",
+      "channel": "personal",
+      "env": {
+        "PROFILE": "personal",
+        "EXPO_PUBLIC_PERSONAL_BUILD": "1",
+        "EXPO_PUBLIC_ENABLE_ABOUT": "0",
+        "EXPO_PUBLIC_ENABLE_ACCOUNT": "0",
+        "EXPO_PUBLIC_ENABLE_AI": "0",
+        "EXPO_PUBLIC_ENABLE_ANALYTICS": "0",
+        "EXPO_PUBLIC_ENABLE_PAID_SUBSCRIPTION": "0",
+        "EXPO_PUBLIC_ENABLE_REVIEW_PROMPTS": "0",
+        "EXPO_PUBLIC_ENABLE_SUPPORT_FEEDBACK": "0",
+        "EXPO_PUBLIC_ENABLE_TTS": "0"
+      }
+    },
     "e2e-android": {
       "extends": "preview",
       "env": {

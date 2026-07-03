@@ -9,6 +9,7 @@ const iconPathMap = {
   development: resolve(__dirname, "./assets/icon-dev.png"),
   "ios-simulator": resolve(__dirname, "./assets/icon-dev.png"),
   preview: resolve(__dirname, "./assets/icon-staging.png"),
+  personal: resolve(__dirname, "./assets/icon-staging.png"),
 } as Record<string, string>
 const iconPath = iconPathMap[process.env.PROFILE || "production"] || iconPathMap.production
 
@@ -21,10 +22,27 @@ const channelNameMap = {
   development: "development",
   "ios-simulator": "development",
   preview: "preview",
+  personal: "personal",
   "e2e-android": "preview",
   "e2e-ios-simulator": "preview",
   production: "production",
 } as Record<string, string>
+
+const TRUE_VALUES = new Set(["1", "true", "yes", "on"])
+const FALSE_VALUES = new Set(["0", "false", "no", "off"])
+
+const readBooleanEnv = (name: string, fallback: boolean) => {
+  const value = process.env[name]?.trim().toLowerCase()
+
+  if (!value) return fallback
+  if (TRUE_VALUES.has(value)) return true
+  if (FALSE_VALUES.has(value)) return false
+  return fallback
+}
+
+const isPersonalBuild = readBooleanEnv("EXPO_PUBLIC_PERSONAL_BUILD", false)
+const defaultFeatureState = !isPersonalBuild
+const isAnalyticsEnabled = readBooleanEnv("EXPO_PUBLIC_ENABLE_ANALYTICS", defaultFeatureState)
 
 export const resolveRuntimeVersion = ({
   isDevelopment,
@@ -55,6 +73,22 @@ export const resolveRuntimeVersion = ({
 export default ({ config }: ConfigContext): ExpoConfig => {
   const profile = process.env.PROFILE || "production"
   const channelName = channelNameMap[profile] || channelNameMap.production
+  const easProjectId =
+    process.env.EAS_PROJECT_ID ||
+    (isPersonalBuild ? undefined : "a6335b14-fb84-45aa-ba80-6f6ab8926920")
+  const expoOwner = process.env.EXPO_OWNER || (isPersonalBuild ? undefined : "follow")
+  const appName = process.env.EXPO_PUBLIC_APP_NAME || (isPersonalBuild ? "Folo Personal" : "Folo")
+  const slug = process.env.EXPO_SLUG || (isPersonalBuild ? "folo-personal" : "follow")
+  const iosBundleIdentifier =
+    process.env.IOS_BUNDLE_IDENTIFIER || (isPersonalBuild ? "is.follow.personal" : "is.follow")
+  const androidPackage =
+    process.env.ANDROID_PACKAGE || (isPersonalBuild ? "is.follow.personal" : "is.follow")
+  const rnfbForceStaticLinking: string[] = ["RNFBApp", "RNFBMessaging", "RNFBAppCheck"]
+
+  if (isAnalyticsEnabled) {
+    rnfbForceStaticLinking.push("RNFBAnalytics")
+  }
+
   const runtimeVersion = resolveRuntimeVersion({
     isDevelopment: isDev,
     packageVersion: PKG.version,
@@ -65,13 +99,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
 
     extra: {
-      eas: {
-        projectId: "a6335b14-fb84-45aa-ba80-6f6ab8926920",
-      },
+      ...(easProjectId ? { eas: { projectId: easProjectId } } : {}),
       e2eEnvProfile: process.env.EXPO_PUBLIC_E2E_ENV_PROFILE ?? null,
       e2eLanguage: process.env.EXPO_PUBLIC_E2E_LANGUAGE ?? null,
     },
-    owner: "follow",
+    ...(expoOwner ? { owner: expoOwner } : {}),
     updates: {
       url: "https://ota.folo.is/manifest",
       requestHeaders: {
@@ -86,8 +118,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     runtimeVersion,
 
-    name: "Folo",
-    slug: "follow",
+    name: appName,
+    slug,
     version: PKG.version,
     orientation: "portrait" as const,
     icon: iconPath,
@@ -95,7 +127,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     userInterfaceStyle: "automatic" as const,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "is.follow",
+      bundleIdentifier: iosBundleIdentifier,
       usesAppleSignIn: true,
       infoPlist: {
         LSApplicationCategoryType: "public.app-category.news",
@@ -110,7 +142,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       googleServicesFile: "./build/GoogleService-Info.plist",
     },
     android: {
-      package: "is.follow",
+      package: androidPackage,
       adaptiveIcon: {
         foregroundImage: adaptiveIconPath,
         monochromeImage: adaptiveIconPath,
@@ -147,7 +179,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             // Expo SDK 55 archive builds regress with use_frameworks + prebuilt RN core.
             buildReactNativeFromSource: true,
             useFrameworks: "static",
-            forceStaticLinking: ["RNFBApp", "RNFBAnalytics", "RNFBMessaging", "RNFBAppCheck"],
+            forceStaticLinking: rnfbForceStaticLinking,
           },
         },
       ],

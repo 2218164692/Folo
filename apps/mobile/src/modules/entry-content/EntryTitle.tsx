@@ -9,6 +9,7 @@ import { useActionLanguage, useGeneralSettingKey } from "@/src/atoms/settings/ge
 import { UserAvatar } from "@/src/components/ui/avatar/UserAvatar"
 import { FeedIcon } from "@/src/components/ui/icon/feed-icon"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { EntryContentContext, useEntryContentContext } from "@/src/modules/entry-content/ctx"
 
 import { EntryTranslation } from "../entry-list/templates/EntryTranslation"
@@ -16,7 +17,8 @@ import { EntryTranslation } from "../entry-list/templates/EntryTranslation"
 export const EntryTitle = ({ title, entryId }: { title: string; entryId: string }) => {
   const { showAITranslationAtom } = useEntryContentContext()
   const showTranslationOnce = useAtomValue(showAITranslationAtom)
-  const enableTranslation = useGeneralSettingKey("translation") || showTranslationOnce
+  const translationSetting = useGeneralSettingKey("translation")
+  const enableTranslation = mobileFeatureFlags.ai && (translationSetting || showTranslationOnce)
   const actionLanguage = useActionLanguage()
   const translation = useEntryTranslation({
     entryId,

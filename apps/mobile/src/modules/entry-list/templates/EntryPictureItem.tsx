@@ -16,6 +16,7 @@ import { measure, runOnJS, runOnUI, useAnimatedRef } from "react-native-reanimat
 import { MediaCarousel } from "@/src/components/ui/carousel/MediaCarousel"
 import { useLightboxControls } from "@/src/components/ui/lightbox/lightboxState"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 
 export function EntryPictureItem({ id }: { id: string }) {
   const { t } = useTranslation()
@@ -55,10 +56,12 @@ export function EntryPictureItem({ id }: { id: string }) {
           if (!feed) {
             return
           }
-          tracker.navigateEntry({
-            feedId: item.feedId!,
-            entryId: id,
-          })
+          if (mobileFeatureFlags.analytics) {
+            tracker.navigateEntry({
+              feedId: item.feedId!,
+              entryId: id,
+            })
+          }
           runOnUI(() => {
             "worklet"
 

@@ -21,6 +21,7 @@ import { ItemPressableStyle } from "@/src/components/ui/pressable/enum"
 import { ItemPressable } from "@/src/components/ui/pressable/ItemPressable"
 import { Text } from "@/src/components/ui/typography/Text"
 import { PlayerAction } from "@/src/components/ui/video/PlayerAction"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { useNavigation } from "@/src/lib/navigation/hooks"
 import { isIOS } from "@/src/lib/platform"
 import { player, useAudioPlayState } from "@/src/lib/player"
@@ -58,7 +59,8 @@ export const EntryNormalItem = memo(
       title: state.title,
       description: state.description,
     }))
-    const enableTranslation = useGeneralSettingKey("translation")
+    const translationSetting = useGeneralSettingKey("translation")
+    const enableTranslation = mobileFeatureFlags.ai && translationSetting
     const actionLanguage = useActionLanguage()
     const translation = useEntryTranslation({
       entryId,
@@ -72,10 +74,12 @@ export const EntryNormalItem = memo(
       if (entry) {
         const fullEntry = getEntry(entryId)
         WebViewManager.setEntry(fullEntry)
-        tracker.navigateEntry({
-          feedId: entry.feedId!,
-          entryId: entry.id,
-        })
+        if (mobileFeatureFlags.analytics) {
+          tracker.navigateEntry({
+            feedId: entry.feedId!,
+            entryId: entry.id,
+          })
+        }
         navigation.pushControllerView(EntryDetailScreen, {
           entryId,
           entryIds: extraData.entryIds ?? [],
@@ -147,7 +151,7 @@ export const EntryNormalItem = memo(
                 )}
                 source={entry.title}
                 target={translation?.title}
-                showTranslation={!!entry.translation}
+                showTranslation={mobileFeatureFlags.ai && !!entry.translation}
                 inline
               />
             )}
@@ -157,7 +161,7 @@ export const EntryNormalItem = memo(
                 className="my-0 text-subheadline text-secondary-label"
                 source={entry.description}
                 target={translation?.description}
-                showTranslation={!!entry.translation}
+                showTranslation={mobileFeatureFlags.ai && !!entry.translation}
                 inline
               />
             )}

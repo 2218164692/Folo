@@ -5,6 +5,7 @@ import { userSyncService } from "@follow/store/user/store"
 import { tracker } from "@follow/tracker"
 import { nativeApplicationVersion } from "expo-application"
 
+import { mobileFeatureFlags } from "../config/personal-build"
 import { migrateLegacyApiSession } from "../lib/auth-cookie-migration"
 import { settingSyncQueue } from "../modules/settings/sync-queue"
 import { initAnalytics } from "./analytics"
@@ -70,20 +71,24 @@ export const initializeApp = async () => {
     await settingSyncQueue.syncLocal()
   }).catch((error) => {
     console.error("setting sync failed", error)
-    void tracker.manager.captureException(error, {
-      module: "setting_sync",
-      stage: "bootstrap",
-    })
+    if (mobileFeatureFlags.analytics) {
+      void tracker.manager.captureException(error, {
+        module: "setting_sync",
+        stage: "bootstrap",
+      })
+    }
   })
   const loadingTime = Date.now() - now
-  tracker.appInit({
-    rn: true,
-    loading_time: loadingTime,
-    version: nativeApplicationVersion!,
-    data_hydrated_time: dataHydratedTime,
-    electron: false,
-    using_indexed_db: true,
-  })
+  if (mobileFeatureFlags.analytics) {
+    tracker.appInit({
+      rn: true,
+      loading_time: loadingTime,
+      version: nativeApplicationVersion!,
+      data_hydrated_time: dataHydratedTime,
+      electron: false,
+      using_indexed_db: true,
+    })
+  }
 
   initBackgroundTask()
   console.log(`Initialize done,`, `${loadingTime}ms`)

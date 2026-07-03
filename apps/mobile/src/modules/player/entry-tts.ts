@@ -3,6 +3,7 @@ import { getFeedById } from "@follow/store/feed/getter"
 import TrackPlayer, { State } from "react-native-track-player"
 
 import { getGeneralSettings } from "@/src/atoms/settings/general"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { toastFetchError } from "@/src/lib/error-parser"
 import { player } from "@/src/lib/player"
 
@@ -51,6 +52,10 @@ export const playEntryTts = async (
     toastTitle: string
   },
 ) => {
+  if (!mobileFeatureFlags.tts) {
+    return
+  }
+
   try {
     if (await isSameEntryTtsTrack(entryId)) {
       await toggleCurrentTtsPlayback()

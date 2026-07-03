@@ -8,6 +8,7 @@ import { useCallback, useMemo } from "react"
 import { useActionLanguage, useGeneralSettingKey } from "@/src/atoms/settings/general"
 import { ErrorBoundary } from "@/src/components/common/ErrorBoundary"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { renderMarkdown } from "@/src/lib/markdown"
 
 import { AISummary } from "../ai/summary"
@@ -61,7 +62,8 @@ export const EntryAISummary: FC<{
   const ctx = useEntryContentContext()
   const showReadability = useAtomValue(ctx.showReadabilityAtom)
   const showAISummaryOnce = useAtomValue(ctx.showAISummaryAtom)
-  const showAISummary = useGeneralSettingKey("summary") || showAISummaryOnce
+  const summarySetting = useGeneralSettingKey("summary")
+  const showAISummary = mobileFeatureFlags.ai && (summarySetting || showAISummaryOnce)
   const entry = useEntry(
     entryId,
     useCallback(

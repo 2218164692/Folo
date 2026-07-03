@@ -17,6 +17,7 @@ import { useCurrentColorsVariants } from "react-native-uikit-colors"
 import { ErrorBoundary } from "../components/common/ErrorBoundary"
 import { GlobalErrorScreen } from "../components/errors/GlobalErrorScreen"
 import { LightboxStateProvider } from "../components/ui/lightbox/lightboxState"
+import { mobileFeatureFlags } from "../config/personal-build"
 import { queryClient } from "../lib/query-client"
 import { TtsStreamProvider } from "../modules/player/TtsStreamProvider"
 import { TimelineSelectorDragProgressProvider } from "../modules/screen/atoms"
@@ -32,7 +33,7 @@ const contexts = [
   <ErrorBoundary fallbackRender={GlobalErrorScreen} children={null} />,
   <KeyboardProvider children={null} />,
   <QueryClientProvider client={queryClient} />,
-  <AppleIAPProvider children={null} />,
+  ...(mobileFeatureFlags.paidSubscription ? [<AppleIAPProvider children={null} />] : []),
   <GestureHandlerRootView />,
   <SheetProvider children={null} />,
   <ActionSheetProvider children={null} />,
@@ -54,7 +55,7 @@ export const RootProviders = ({ children }: { children: ReactNode }) => {
       <ComposeContextProvider contexts={contexts}>
         {children}
         <ServerConfigsLoader />
-        <TtsStreamProvider />
+        {mobileFeatureFlags.tts && <TtsStreamProvider />}
       </ComposeContextProvider>
     </View>
   )

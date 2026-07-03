@@ -23,6 +23,7 @@ import { FeedIcon } from "@/src/components/ui/icon/feed-icon"
 import { ItemPressableStyle } from "@/src/components/ui/pressable/enum"
 import { ItemPressable } from "@/src/components/ui/pressable/ItemPressable"
 import { Text } from "@/src/components/ui/typography/Text"
+import { mobileFeatureFlags } from "@/src/config/personal-build"
 import { CalendarTimeAddCuteReIcon } from "@/src/icons/calendar_time_add_cute_re"
 import { Eye2CuteReIcon } from "@/src/icons/eye_2_cute_re"
 import { openLink } from "@/src/lib/native"
@@ -55,8 +56,8 @@ export const EntryDetailScreen: NavigationControllerView<{
   const insets = useSafeAreaInsets()
   const ctxValue = useMemo(
     () => ({
-      showAISummaryAtom: atom(entry?.summary || false),
-      showAITranslationAtom: atom(!!entry?.translation || false),
+      showAISummaryAtom: atom(mobileFeatureFlags.ai && (entry?.summary || false)),
+      showAITranslationAtom: atom(mobileFeatureFlags.ai && !!entry?.translation),
       showReadabilityAtom: atom(entry?.readability || false),
       showSourceContentAtom: atom(entry?.sourceContent || false),
       titleHeightAtom: atom(0),
@@ -150,7 +151,7 @@ const EntryContentWebViewWithContext = ({ entryId }: { entryId: string }) => {
   const showTranslationOnce = useAtomValue(showAITranslationAtom)
   const actionLanguage = useActionLanguage()
   const userRole = useUserRole()
-  const showTranslation = translationSetting || showTranslationOnce
+  const showTranslation = mobileFeatureFlags.ai && (translationSetting || showTranslationOnce)
   const translationPrefetchEnabled =
     showTranslation &&
     (userRole == null || (userRole !== UserRole.Free && userRole !== UserRole.Trial))
