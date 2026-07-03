@@ -84,6 +84,23 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const androidPackage =
     process.env.ANDROID_PACKAGE || (isPersonalBuild ? "is.follow.personal" : "is.follow")
   const rnfbForceStaticLinking: string[] = ["RNFBApp", "RNFBMessaging", "RNFBAppCheck"]
+  const updates = isPersonalBuild
+    ? {
+        enabled: false,
+        checkAutomatically: "NEVER" as const,
+      }
+    : {
+        url: "https://ota.folo.is/manifest",
+        requestHeaders: {
+          "expo-channel-name": channelName,
+        },
+        codeSigningCertificate: "./code-signing/certificate.pem",
+        codeSigningMetadata: {
+          keyid: "main",
+          alg: "rsa-v1_5-sha256",
+        },
+        checkAutomatically: "NEVER" as const,
+      }
 
   if (isAnalyticsEnabled) {
     rnfbForceStaticLinking.push("RNFBAnalytics")
@@ -104,18 +121,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       e2eLanguage: process.env.EXPO_PUBLIC_E2E_LANGUAGE ?? null,
     },
     ...(expoOwner ? { owner: expoOwner } : {}),
-    updates: {
-      url: "https://ota.folo.is/manifest",
-      requestHeaders: {
-        "expo-channel-name": channelName,
-      },
-      codeSigningCertificate: "./code-signing/certificate.pem",
-      codeSigningMetadata: {
-        keyid: "main",
-        alg: "rsa-v1_5-sha256",
-      },
-      checkAutomatically: "NEVER",
-    },
+    updates,
     runtimeVersion,
 
     name: appName,
