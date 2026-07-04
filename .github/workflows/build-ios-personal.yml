@@ -52,6 +52,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --child-concurrency=1
 
+      - name: Prepare personal native dependencies
+        run: node .github/scripts/prepare-personal-ios-native.mjs
+
       - name: Build mobile web assets
         run: pnpm --dir apps/mobile/web-app build --outDir ../../../out/rn-web/html-renderer
 
@@ -77,7 +80,12 @@ jobs:
             exit 1
           fi
 
-          if grep -q "EXUpdates" ios/Pods/Pods.xcodeproj/project.pbxproj; then
+          if [ -f ios/Podfile.lock ] && grep -En "^[[:space:]]+- EXUpdates([[:space:](]|$)" ios/Podfile.lock; then
+            echo "EXUpdates is still present in Podfile.lock"
+            exit 1
+          fi
+
+          if grep -En "(/EXUpdates/|EXUpdates\\.bundle|name = EXUpdates;|productName = EXUpdates;)" ios/Pods/Pods.xcodeproj/project.pbxproj; then
             echo "EXUpdates is still present in Pods.xcodeproj"
             exit 1
           fi
